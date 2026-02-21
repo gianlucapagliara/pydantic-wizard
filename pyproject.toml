@@ -7,7 +7,6 @@ name = "pydantic-wizard"
 version = "0.1.0"
 description = "Interactive wizard-style CLI for configuring Pydantic v2 models, with YAML serialization."
 readme = "README.md"
-license = "MIT"
 authors = [{ name = "Gianluca Pagliara", email = "pagliara.gianluca@gmail.com" }]
 requires-python = ">=3.13,<3.14"
 classifiers = [
