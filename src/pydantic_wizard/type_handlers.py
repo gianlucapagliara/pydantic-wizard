@@ -658,6 +658,19 @@ class TypeHandlerRegistry:
             StrHandler(),
         ]
 
+    def register(self, handler: Any, *, priority: bool = True) -> None:
+        """Register a custom type handler.
+
+        Args:
+            handler: A handler implementing the TypeHandler protocol.
+            priority: If True (default), insert at the front so it takes
+                precedence over built-in handlers. If False, append to the end.
+        """
+        if priority:
+            self._handlers.insert(0, handler)
+        else:
+            self._handlers.append(handler)
+
     def get_handler(self, spec: FieldSpec) -> Any | None:
         for handler in self._handlers:
             if handler.can_handle(spec):
