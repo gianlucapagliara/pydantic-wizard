@@ -78,6 +78,7 @@ select = [
     "UP",  # pyupgrade
 ]
 ignore = [
+    "C901",  # Function complexity
     "E501",  # Line too long (handled by formatter)
 ]
 
