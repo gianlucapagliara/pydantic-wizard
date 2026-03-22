@@ -1,0 +1,42 @@
+site_name: Pydantic Wizard
+site_url: https://gianlucapagliara.github.io/pydantic-wizard/
+site_description: Interactive wizard-style CLI for configuring Pydantic v2 models, with YAML serialization.
+site_author: Gianluca Pagliara
+repo_url: https://github.com/gianlucapagliara/pydantic-wizard
+repo_name: gianlucapagliara/pydantic-wizard
+
+theme:
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+    - python
+    - bash
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - codehilite:
+      guess_lang: false
+  - def_list
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+  - User Guide:
+      - CLI Commands: guide/cli-commands.md
+      - Supported Types: guide/supported-types.md
+      - Programmatic API: guide/programmatic-api.md
+  - API Reference:
+      - Introspection: api/introspection.md
+      - Type Handlers: api/type-handlers.md
+      - Serialization: api/serialization.md
+      - Validation: api/validation.md
+  - Development:
+      - Contributing: development/contributing.md
