@@ -13,7 +13,9 @@ from pydantic_wizard.introspection import (
 )
 from pydantic_wizard.prompts import prompt_model
 from pydantic_wizard.serialization import (
+    dump_yaml,
     load_from_yaml,
+    prepare_for_serialization,
     resolve_config_class,
     serialize_to_yaml,
 )
@@ -31,6 +33,8 @@ __all__ = [
     "serialize_to_yaml",
     "load_from_yaml",
     "resolve_config_class",
+    "prepare_for_serialization",
+    "dump_yaml",
     # Validation
     "validate_config",
     "validate_and_fix",

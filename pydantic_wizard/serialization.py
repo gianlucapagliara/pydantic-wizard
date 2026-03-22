@@ -65,7 +65,7 @@ def _prepare_value(value: Any) -> Any:
         return _prepare_dict(value.model_dump())
     if isinstance(value, dict):
         return _prepare_dict(value)
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return [_prepare_value(v) for v in value]
     if isinstance(value, set):
         return [_prepare_value(v) for v in sorted(value, key=str)]
@@ -87,23 +87,67 @@ def _prepare_dict(data: dict[str, Any]) -> dict[str, Any]:
     return {k: _prepare_value(v) for k, v in data.items()}
 
 
+def prepare_for_serialization(data: dict[str, Any]) -> dict[str, Any]:
+    """Prepare a dict of Pydantic model data for YAML serialization.
+
+    Applies pydantic-wizard's type converters (Decimal->str, Enum->value,
+    datetime->ISO, set->sorted list, etc.) without coupling to the full
+    serialize_to_yaml flow.
+    """
+    return _prepare_dict(data)
+
+
+def dump_yaml(data: dict[str, Any], output_path: Path) -> None:
+    """Write a dict to a YAML file using pydantic-wizard's ModelConfigDumper.
+
+    This is a low-level function that uses the custom YAML dumper which handles
+    Decimal, Enum, datetime, set, etc. The data should be passed through
+    ``prepare_for_serialization`` first for full type normalization.
+    """
+    prepared = _prepare_dict(data)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        yaml.dump(
+            prepared,
+            f,
+            Dumper=ModelConfigDumper,
+            default_flow_style=False,
+            allow_unicode=True,
+            sort_keys=False,
+        )
+
+
 def serialize_to_yaml(
     data: dict[str, Any],
     config_class: type[BaseModel],
     output_path: Path,
     model_name: str = "",
+    include_metadata: bool = True,
 ) -> None:
-    """Serialize configuration data to a YAML file with metadata."""
-    config_fqn = f"{config_class.__module__}.{config_class.__qualname__}"
+    """Serialize configuration data to a YAML file.
 
-    document: dict[str, Any] = {
-        METADATA_KEY: {
-            "model_type": model_name,
-            "configuration_class": config_fqn,
-            "version": _get_package_version(),
-        },
-        CONFIGURATION_KEY: _prepare_dict(data),
-    }
+    Args:
+        data: Configuration data dict.
+        config_class: The Pydantic model class for metadata.
+        output_path: Destination file path.
+        model_name: Optional model name for metadata.
+        include_metadata: When True (default), wraps data in a metadata/configuration
+            envelope. When False, writes just the configuration data at the top level.
+    """
+    prepared = _prepare_dict(data)
+
+    if include_metadata:
+        config_fqn = f"{config_class.__module__}.{config_class.__qualname__}"
+        document: dict[str, Any] = {
+            METADATA_KEY: {
+                "model_type": model_name,
+                "configuration_class": config_fqn,
+                "version": _get_package_version(),
+            },
+            CONFIGURATION_KEY: prepared,
+        }
+    else:
+        document = prepared
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
