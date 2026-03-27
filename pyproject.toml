@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-wizard"
-version = "0.2.0"
+version = "0.2.1"
 description = "Interactive wizard-style CLI for configuring Pydantic v2 models, with YAML serialization."
 readme = "README.md"
 authors = [{ name = "Gianluca Pagliara", email = "pagliara.gianluca@gmail.com" }]
@@ -17,7 +17,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "pydantic>=2.0",
+    "pydantic>=2.12",
     "typer>=0.15",
     "rich>=13.0",
     "questionary>=2.0",
@@ -52,7 +52,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -65,7 +65,7 @@ exclude = ["tests/.*"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = [
