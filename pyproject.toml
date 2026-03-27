@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-wizard"
-version = "0.2.1"
+version = "0.2.2"
 description = "Interactive wizard-style CLI for configuring Pydantic v2 models, with YAML serialization."
 readme = "README.md"
 authors = [{ name = "Gianluca Pagliara", email = "pagliara.gianluca@gmail.com" }]
