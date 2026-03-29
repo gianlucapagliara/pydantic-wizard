@@ -2,10 +2,19 @@
 set -euo pipefail
 
 # Release script for pydantic-wizard
-# Usage: ./scripts/release.sh [major|minor|patch]
+# Usage: ./scripts/release.sh [--yes|-y] [major|minor|patch]
 # Default: patch
 
-BUMP_TYPE="${1:-patch}"
+YES=false
+BUMP_TYPE="patch"
+
+for arg in "$@"; do
+    case "$arg" in
+        -y|--yes) YES=true ;;
+        major|minor|patch) BUMP_TYPE="$arg" ;;
+        *) echo "Error: unknown argument '$arg'"; exit 1 ;;
+    esac
+done
 PYPROJECT="pyproject.toml"
 
 # Validate bump type
@@ -51,10 +60,12 @@ NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 echo "New version:     $NEW_VERSION"
 
 # Confirm
-read -rp "Release v${NEW_VERSION}? [y/N] " CONFIRM
-if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
-    echo "Aborted."
-    exit 0
+if [[ "$YES" != true ]]; then
+    read -rp "Release v${NEW_VERSION}? [y/N] " CONFIRM
+    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+        echo "Aborted."
+        exit 0
+    fi
 fi
 
 # Bump version in pyproject.toml

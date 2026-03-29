@@ -13,8 +13,9 @@ help: ## Show this help
 
 # ── Setup ───────────────────────────────────────────────────────────
 .PHONY: install
-install: ## Install all dependencies (frozen lockfile)
+install: ## Install all dependencies (frozen lockfile) and set up hooks
 	$(UV) sync --frozen --group dev
+	$(UV) run pre-commit install
 
 .PHONY: sync
 sync: ## Install all dependencies (allow lockfile updates)
@@ -60,8 +61,8 @@ version: ## Print current version
 
 # ── Release ─────────────────────────────────────────────────────────
 .PHONY: release
-release: ## Release a new version (BUMP=patch|minor|major)
-	@scripts/release.sh $(BUMP)
+release: ## Release a new version (BUMP=patch|minor|major, YES=1 to skip confirm)
+	@scripts/release.sh $(if $(YES),--yes) $(BUMP)
 
 # ── Docs ────────────────────────────────────────────────────────────
 .PHONY: docs-serve
