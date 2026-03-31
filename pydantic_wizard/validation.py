@@ -1,19 +1,30 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import questionary
 from pydantic import BaseModel, ValidationError
 
 from pydantic_wizard.display import display_validation_errors
+from pydantic_wizard.exceptions import ConfigValidationError
+
+logger = logging.getLogger(__name__)
 
 
 def validate_config(
     model_class: type[BaseModel],
     data: dict[str, Any],
 ) -> BaseModel:
-    """Validate data against a Pydantic model, raising on failure."""
-    return model_class.model_validate(data)
+    """Validate data against a Pydantic model, raising on failure.
+
+    Raises:
+        ConfigValidationError: If validation fails.
+    """
+    try:
+        return model_class.model_validate(data)
+    except ValidationError as e:
+        raise ConfigValidationError(str(e)) from e
 
 
 def validate_and_fix(

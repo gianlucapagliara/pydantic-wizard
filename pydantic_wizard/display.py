@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from pydantic import BaseModel
+from pydantic_core import PydanticUndefined
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
 from pydantic_wizard.introspection import FieldSpec, get_type_display_name
+
+logger = logging.getLogger(__name__)
 
 console = Console()
 
@@ -32,12 +36,12 @@ def display_field_header(spec: FieldSpec, path: str = "") -> None:
 
 
 def _format_default(spec: FieldSpec) -> str:
-    if spec.default is not None and str(spec.default) != "PydanticUndefined":
+    if spec.default is not PydanticUndefined and spec.default is not None:
         return repr(spec.default)
     if spec.default_factory is not None:
         try:
             return repr(spec.default_factory())
-        except Exception:
+        except (TypeError, ValueError):
             return "<factory>"
     return "None"
 

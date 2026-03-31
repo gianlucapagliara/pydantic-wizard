@@ -3,12 +3,18 @@ from __future__ import annotations
 import datetime
 import enum
 import importlib
+import logging
 from decimal import Decimal
+from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 from typing import Any
 
 import yaml
 from pydantic import BaseModel
+
+from pydantic_wizard.exceptions import ConfigLoadError, ModelResolutionError
+
+logger = logging.getLogger(__name__)
 
 METADATA_KEY = "_metadata"
 CONFIGURATION_KEY = "configuration"
@@ -166,9 +172,20 @@ def load_from_yaml(path: Path) -> tuple[str, str, dict[str, Any]]:
 
     Returns:
         Tuple of (model_type, configuration_class FQN, configuration data dict).
+
+    Raises:
+        ConfigLoadError: If the file cannot be read or parsed.
     """
-    with open(path) as f:
-        raw = yaml.safe_load(f)
+    try:
+        with open(path) as f:
+            raw = yaml.safe_load(f)
+    except (OSError, yaml.YAMLError) as e:
+        raise ConfigLoadError(f"Failed to load {path}: {e}") from e
+
+    if not isinstance(raw, dict):
+        raise ConfigLoadError(
+            f"Expected a YAML mapping in {path}, got {type(raw).__name__}"
+        )
 
     metadata = raw.get(METADATA_KEY, {})
     model_type = metadata.get("model_type", "")
@@ -179,12 +196,26 @@ def load_from_yaml(path: Path) -> tuple[str, str, dict[str, Any]]:
 
 
 def resolve_config_class(fqn: str) -> type[BaseModel]:
-    """Import and return a configuration class from its fully qualified name."""
+    """Import and return a configuration class from its fully qualified name.
+
+    Raises:
+        ModelResolutionError: If the class cannot be imported or is not a BaseModel.
+    """
     module_path, _, class_name = fqn.rpartition(".")
-    module = importlib.import_module(module_path)
-    cls = getattr(module, class_name)
+    if not module_path:
+        raise ModelResolutionError(f"Invalid fully-qualified name: {fqn!r}")
+    try:
+        module = importlib.import_module(module_path)
+    except ImportError as e:
+        raise ModelResolutionError(f"Cannot import module {module_path!r}: {e}") from e
+    try:
+        cls = getattr(module, class_name)
+    except AttributeError as e:
+        raise ModelResolutionError(
+            f"Module {module_path!r} has no attribute {class_name!r}"
+        ) from e
     if not isinstance(cls, type) or not issubclass(cls, BaseModel):
-        raise ValueError(f"{fqn} is not a Pydantic BaseModel subclass")
+        raise ModelResolutionError(f"{fqn} is not a Pydantic BaseModel subclass")
     return cls
 
 
@@ -193,5 +224,5 @@ def _get_package_version() -> str:
         from importlib.metadata import version
 
         return version("pydantic-wizard")
-    except Exception:
+    except (ImportError, PackageNotFoundError):
         return "unknown"

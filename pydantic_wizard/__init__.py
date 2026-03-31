@@ -6,6 +6,12 @@ from pydantic_wizard.display import (
     display_summary_table,
     display_validation_errors,
 )
+from pydantic_wizard.exceptions import (
+    ConfigLoadError,
+    ConfigValidationError,
+    ModelResolutionError,
+    PydanticWizardError,
+)
 from pydantic_wizard.introspection import (
     FieldSpec,
     get_type_display_name,
@@ -23,6 +29,11 @@ from pydantic_wizard.type_handlers import TypeHandler, TypeHandlerRegistry
 from pydantic_wizard.validation import validate_and_fix, validate_config
 
 __all__ = [
+    # Exceptions
+    "PydanticWizardError",
+    "ConfigLoadError",
+    "ConfigValidationError",
+    "ModelResolutionError",
     # Introspection
     "FieldSpec",
     "introspect_model",

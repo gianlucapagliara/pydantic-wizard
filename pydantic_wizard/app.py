@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Annotated
 
@@ -17,6 +18,7 @@ from pydantic_wizard.display import (
     display_summary_table,
     display_validation_errors,
 )
+from pydantic_wizard.exceptions import ConfigLoadError, ModelResolutionError
 from pydantic_wizard.introspection import introspect_model
 from pydantic_wizard.prompts import prompt_model
 from pydantic_wizard.serialization import (
@@ -25,6 +27,8 @@ from pydantic_wizard.serialization import (
     serialize_to_yaml,
 )
 from pydantic_wizard.validation import validate_and_fix
+
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(
     name="pydantic-wizard",
@@ -49,7 +53,7 @@ def new_config(
     """Create a new configuration interactively for a Pydantic model."""
     try:
         config_class = resolve_config_class(model_fqn)
-    except (ImportError, ValueError, AttributeError) as e:
+    except ModelResolutionError as e:
         display_error(f"Failed to resolve model class: {e}")
         raise typer.Exit(1) from e
 
@@ -94,7 +98,11 @@ def edit_config(
         display_error(f"File not found: {config_file}")
         raise typer.Exit(1)
 
-    model_name, config_fqn, data = load_from_yaml(config_file)
+    try:
+        model_name, config_fqn, data = load_from_yaml(config_file)
+    except ConfigLoadError as e:
+        display_error(str(e))
+        raise typer.Exit(1) from e
 
     if not config_fqn:
         display_error("No configuration class found in YAML metadata.")
@@ -102,7 +110,7 @@ def edit_config(
 
     try:
         config_class = resolve_config_class(config_fqn)
-    except (ImportError, ValueError, AttributeError) as e:
+    except ModelResolutionError as e:
         display_error(f"Failed to resolve configuration class: {e}")
         raise typer.Exit(1) from e
 
@@ -151,7 +159,11 @@ def validate_config_cmd(
         display_error(f"File not found: {config_file}")
         raise typer.Exit(1)
 
-    model_name, config_fqn, data = load_from_yaml(config_file)
+    try:
+        model_name, config_fqn, data = load_from_yaml(config_file)
+    except ConfigLoadError as e:
+        display_error(str(e))
+        raise typer.Exit(1) from e
 
     # Determine which class to validate against
     fqn = model or config_fqn
@@ -164,7 +176,7 @@ def validate_config_cmd(
 
     try:
         config_class = resolve_config_class(fqn)
-    except (ImportError, ValueError, AttributeError) as e:
+    except ModelResolutionError as e:
         display_error(f"Failed to resolve configuration class: {e}")
         raise typer.Exit(1) from e
 
@@ -191,7 +203,7 @@ def show_schema(
     """Show the configuration schema for a Pydantic model."""
     try:
         config_class = resolve_config_class(model_fqn)
-    except (ImportError, ValueError, AttributeError) as e:
+    except ModelResolutionError as e:
         display_error(f"Failed to resolve model class: {e}")
         raise typer.Exit(1) from e
 

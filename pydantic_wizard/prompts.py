@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from pydantic import BaseModel
+from pydantic_core import PydanticUndefined
 
 from pydantic_wizard.display import display_field_header, display_model_header
 from pydantic_wizard.introspection import FieldSpec, introspect_model
@@ -15,6 +17,8 @@ from pydantic_wizard.type_handlers import (
     TypeHandlerRegistry,
     UnionHandler,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def prompt_model(
@@ -45,12 +49,13 @@ def prompt_model(
         # Determine effective default
         effective_default = defaults.get(spec.name)
         if effective_default is None:
-            if spec.default is not None and str(spec.default) != "PydanticUndefined":
+            if spec.default is not PydanticUndefined and spec.default is not None:
                 effective_default = spec.default
             elif spec.default_factory is not None:
                 try:
                     effective_default = spec.default_factory()
-                except Exception:
+                except (TypeError, ValueError):
+                    logger.debug("Default factory for %s failed", spec.name)
                     effective_default = None
 
         display_field_header(spec, path)
@@ -89,7 +94,7 @@ def _call_handler(
             ),
         )
     if isinstance(
-        handler, (OptionalHandler, ListHandler, SetHandler, UnionHandler, DictHandler)
+        handler, OptionalHandler | ListHandler | SetHandler | UnionHandler | DictHandler
     ):
         return handler.prompt(spec, default, registry=registry)
     return handler.prompt(spec, default)
