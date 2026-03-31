@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import io
-from typing import Any
-
 import streamlit as st
 import yaml
 from pydantic import ValidationError
@@ -13,44 +10,10 @@ from pydantic_wizard.exceptions import ModelResolutionError
 from pydantic_wizard.serialization import (
     CONFIGURATION_KEY,
     METADATA_KEY,
-    ModelConfigDumper,
-    prepare_for_serialization,
     resolve_config_class,
 )
 from pydantic_wizard.streamlit_ui.model_form import render_model_form
-
-
-def _get_package_version() -> str:
-    try:
-        from importlib.metadata import version
-
-        return version("pydantic-wizard")
-    except Exception:
-        return "unknown"
-
-
-def _build_yaml(data: dict[str, Any], config_class: type, model_name: str) -> str:
-    """Build a YAML string with metadata envelope."""
-    prepared = prepare_for_serialization(data)
-    config_fqn = f"{config_class.__module__}.{config_class.__qualname__}"
-    document = {
-        METADATA_KEY: {
-            "model_type": model_name,
-            "configuration_class": config_fqn,
-            "version": _get_package_version(),
-        },
-        CONFIGURATION_KEY: prepared,
-    }
-    buf = io.StringIO()
-    yaml.dump(
-        document,
-        buf,
-        Dumper=ModelConfigDumper,
-        default_flow_style=False,
-        allow_unicode=True,
-        sort_keys=False,
-    )
-    return buf.getvalue()
+from pydantic_wizard.streamlit_ui.utils import build_yaml
 
 
 def render() -> None:
@@ -134,13 +97,14 @@ def render() -> None:
             st.markdown(f"- **{loc}**: {msg}")
 
     with col2:
-        yaml_content = _build_yaml(
+        yaml_content = build_yaml(
             new_data, config_class, model_name or config_class.__name__
         )
+        file_name = uploaded.name if uploaded.name else "config.yaml"
         st.download_button(
             "Download YAML",
             data=yaml_content,
-            file_name="config.yaml",
+            file_name=file_name,
             mime="text/yaml",
             key="edit_download",
         )

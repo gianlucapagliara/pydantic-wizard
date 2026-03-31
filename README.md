@@ -14,6 +14,7 @@ Point it at any `BaseModel` subclass and it will walk you through every field �
 - **Interactive validation** — on error, re-prompts only the failing fields
 - **Extensible** — register custom `TypeHandler` implementations for domain-specific types
 - **Rich terminal output** — field panels, summary tables, and colored messages via [Rich](https://github.com/Textualize/rich)
+- **Web UI** — optional Streamlit-based browser interface for visual configuration
 
 ## Installation
 
@@ -25,6 +26,12 @@ Or with [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv add pydantic-wizard
+```
+
+To include the optional web UI:
+
+```bash
+pip install pydantic-wizard[web]
 ```
 
 ## Quick Start
@@ -103,6 +110,14 @@ pydantic-wizard show-schema <MODEL_FQN>
 ```
 
 Displays a formatted table of all fields, types, defaults, and descriptions.
+
+### `web` — Launch the web UI
+
+```bash
+pydantic-wizard web
+```
+
+Opens a Streamlit-based browser interface with pages for creating, editing, validating, and inspecting configurations. Requires the `[web]` extra.
 
 ## Supported Types
 

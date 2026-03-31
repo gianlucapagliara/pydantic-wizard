@@ -72,11 +72,22 @@ def _render_bool(spec: FieldSpec, key: str, default: Any) -> bool:
 
 def _render_str(spec: FieldSpec, key: str, default: Any) -> str:
     default_str = str(default) if default is not None else ""
+    help_parts: list[str] = []
+    if spec.description:
+        help_parts.append(spec.description)
+    c = spec.constraints
+    if "min_length" in c:
+        help_parts.append(f"min length: {c['min_length']}")
+    if "max_length" in c:
+        help_parts.append(f"max length: {c['max_length']}")
+    if "pattern" in c:
+        help_parts.append(f"pattern: `{c['pattern']}`")
+    help_text = " | ".join(help_parts) if help_parts else None
     result: str = st.text_input(
         _label(spec),
         value=default_str,
         key=key,
-        help=spec.description,
+        help=help_text,
     )
     return result
 
@@ -458,7 +469,12 @@ def _label(spec: FieldSpec, extra: str | None = None) -> str:
 
 
 def _numeric_bounds(spec: FieldSpec, *, is_int: bool) -> dict[str, Any]:
-    """Convert FieldSpec constraints to st.number_input kwargs."""
+    """Convert FieldSpec constraints to st.number_input kwargs.
+
+    For integers, ``gt``/``lt`` are adjusted by +1/-1 to become inclusive bounds.
+    For floats, ``gt``/``lt`` are passed as-is since Streamlit has no exclusive
+    bound option and adjusting by epsilon is unreliable.
+    """
     kwargs: dict[str, Any] = {}
     c = spec.constraints
     if "ge" in c:

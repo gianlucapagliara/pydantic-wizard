@@ -6,13 +6,14 @@ import streamlit as st
 
 from pydantic_wizard.exceptions import ModelResolutionError
 from pydantic_wizard.introspection import (
+    FieldSpec,
     get_type_display_name,
     introspect_model,
 )
 from pydantic_wizard.serialization import resolve_config_class
 
 
-def _format_default(spec) -> str:  # type: ignore[no-untyped-def]
+def _format_default(spec: FieldSpec) -> str:
     """Format default value for display."""
     from pydantic_core import PydanticUndefined
 
