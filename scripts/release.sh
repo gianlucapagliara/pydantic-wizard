@@ -79,7 +79,7 @@ echo "Running checks..."
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy --strict pydantic_wizard/
-uv run pytest tests/ -x -q
+uv run --extra web pytest tests/ -x -q
 
 # Commit, tag, push
 git add "$PYPROJECT" uv.lock
