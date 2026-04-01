@@ -49,7 +49,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: uv sync
+      run: uv sync --extra web
 
     - name: Run tests with coverage
       run: uv run pytest tests/ --cov=pydantic_wizard --cov-report=xml --cov-fail-under=40

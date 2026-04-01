@@ -24,6 +24,9 @@ dependencies = [
     "PyYAML>=6.0",
 ]
 
+[project.optional-dependencies]
+web = ["streamlit>=1.30"]
+
 [project.urls]
 Homepage = "https://github.com/gianlucapagliara/pydantic-wizard"
 Documentation = "https://gianlucapagliara.github.io/pydantic-wizard/"

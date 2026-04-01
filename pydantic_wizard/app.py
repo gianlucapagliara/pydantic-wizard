@@ -211,5 +211,13 @@ def show_schema(
     display_schema(config_class, specs)
 
 
+@app.command("web")
+def web_ui() -> None:
+    """Launch the Streamlit web interface."""
+    from pydantic_wizard.streamlit_ui import launch
+
+    launch()
+
+
 if __name__ == "__main__":
     app()
